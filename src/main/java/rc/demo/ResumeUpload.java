@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DriveQuickStart {
+public class ResumeUpload {
 
     private static final String APPLICATION_NAME = "TestUpload";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -59,7 +59,7 @@ public class DriveQuickStart {
     }
 
     public static void main(String[] args) {
-        DriveQuickStart app = new DriveQuickStart();
+        ResumeUpload app = new ResumeUpload();
         try{
             File file = new File(FILE_PATH);
             app.uploadFile(file);
@@ -73,13 +73,13 @@ public class DriveQuickStart {
     {
         long fileSize = file.length();
         Credential credential = getCredentials(HTTP_TRANSPORT);
-        String sessionUrl = initSessionUri(credential, file, getTargetFolderId());
-        System.out.println(sessionUrl);
+        //String sessionUrl = initSessionUri(getCredentials(HTTP_TRANSPORT), file, getTargetFolderId());
+        String sessionUrl = "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=AEnB2UoNChT_eXk-nnYjRHzJZdsIcHETMzbYSTRzlrhuptpFzZ5jguXFueyZFv4pLO0VK2I5V-IkOl-Q8vwSBoM7Z_xHcVq7RuOhBHY8O5k7eEapySrs2AY";
         if (StringUtils.isBlank(sessionUrl)){
             return;
         }
 
-        for(long i = 1, j = CHUNK_LIMIT; i <= fileSize; i+=CHUNK_LIMIT)
+        for(long i = 7, j = CHUNK_LIMIT; i <= fileSize; i+=CHUNK_LIMIT)
         {
             if(i+CHUNK_LIMIT >= fileSize)
             {
@@ -94,7 +94,7 @@ public class DriveQuickStart {
 
     private Credential getCredentials(NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = DriveQuickStart.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = ResumeUpload.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         // Build flow and trigger user authorization request.
@@ -114,7 +114,7 @@ public class DriveQuickStart {
                 .build();
 
         FileList result = service.files().list()
-                .setPageSize(100)
+                .setPageSize(10)
                 .setFields("nextPageToken, files(id, name)")
                 .execute();
         List<com.google.api.services.drive.model.File> files = result.getFiles();
@@ -174,6 +174,7 @@ public class DriveQuickStart {
         //uploadReq.setRequestProperty("Content-Type", "application/octet-stream");
         uploadReq.setRequestProperty("Content-Length", String.valueOf(uploadBytes));
         uploadReq.setRequestProperty("Content-Range", "bytes " + chunkStart + "-" + (chunkStart + uploadBytes -1) + "/" + fileSize);
+        uploadReq.setRequestProperty("Authorization","Bearer " + credential.getAccessToken());
 
         OutputStream outstream = uploadReq.getOutputStream();
 
@@ -187,7 +188,6 @@ public class DriveQuickStart {
         outstream.close();
 
         uploadReq.connect();
-        System.out.println(credential.getAccessToken());
 
         return uploadReq.getResponseCode();
     }
