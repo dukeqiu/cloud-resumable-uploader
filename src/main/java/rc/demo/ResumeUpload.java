@@ -191,32 +191,4 @@ public class ResumeUpload {
 
         return uploadReq.getResponseCode();
     }
-
-
-
-    public String createFolder(Drive drive, String folderName, String parentId, String email) throws Exception {
-
-        String id;
-        String fields = "id";
-
-        Map<String, String> appProperties = new HashMap<>();
-        appProperties.put(APP_PROPERTY_KEY, APPLICATION_NAME);
-
-        com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
-        fileMetadata.setName(folderName);
-        fileMetadata.setMimeType(MIME_TYPE_FOLDER);
-        fileMetadata.setAppProperties(appProperties);
-        // means sub folder
-        if (StringUtils.isNotBlank(parentId)) {
-            fileMetadata.setParents(Collections.singletonList(parentId));
-            fields = "id, parents";
-        }
-
-        com.google.api.services.drive.model.File file = drive.files().create(fileMetadata)
-                .setFields(fields)
-                .execute();
-        id = file.getId();
-
-        return id;
-    }
 }
